@@ -1,0 +1,106 @@
+﻿@model MVCEdu.ViewModels.CourseTeacherViewModel
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Courses</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<form asp-controller="Courses" asp-action="Index" method="get">
+    <p>
+        Title: <input type="text" asp-for="SearchTitle" /> <input type="submit" value="Filter" />
+        Semester: <input type="text" asp-for="SearchSemester" /> <input type="submit" value="Filter" />
+        Programme: <input type="text" asp-for="SearchProgramme" /> <input type="submit" value="Filter" />
+    </p>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Courses[0].Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Courses[0].Credits)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Courses[0].Semester)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Courses[0].Programme)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Courses[0].EducationLevel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Courses[0].FirstTeacherId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Courses[0].SecondTeacherId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Courses)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Credits)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Semester)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Programme)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EducationLevel)
+            </td>
+
+            @{
+                var pname = ""; //professor name
+                var aname = ""; //assistant name
+
+                @foreach (var prof in Model.Teachers)
+                {
+                    if (prof.Id == item.FirstTeacherId)
+                    {
+                        pname = prof.FirstName + " " + prof.LastName;
+
+                    }
+
+                    if (prof.Id == item.SecondTeacherId)
+                    {
+                        aname = prof.FirstName + " " + prof.LastName;
+                    }
+
+                    else if (pname != "" && aname != "")
+                    {
+                        break;
+                    }
+
+                }
+
+
+                <td>
+                    @Html.DisplayFor(modelItem => pname)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => aname)
+                </td>
+            }
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

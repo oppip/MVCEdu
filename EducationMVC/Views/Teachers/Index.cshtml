@@ -1,0 +1,82 @@
+﻿@model MVCEdu.ViewModels.TeacherFilterViewModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Teachers</h1>
+
+<p>
+    <a asp-action="New">Креирај нов</a>
+</p>
+<form asp-controller="Teachers" asp-action="Index" method="get">
+    <p>
+        First Name: <input type="text" asp-for="SearchFirstName" /> <input type="submit" value="Filter" />
+        Last Name: <input type="text" asp-for="SearchLastName" /> <input type="submit" value="Filter" />
+        Degree: <input type="text" asp-for="SearchDegree" /> <input type="submit" value="Filter" /><br />
+        Academic Rank: <input type="text" asp-for="SearchAcademicRank" /> <input type="submit" value="Filter" />
+    </p>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers[0].FirstName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers[0].LastName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers[0].Degree)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers[0].AcademicRank)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers[0].OfficeNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers[0].HireDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers[0].ProfilePicture)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Teachers) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Degree)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AcademicRank)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OfficeNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HireDate)
+            </td>
+            <td>
+                <img src="~/images/@item.ProfilePicture" class="rounded-circle" height="40" width="40" asp-append-version="true" />
+                @{ 
+                        //Html.DisplayFor(modelItem => item.ProfilePicture)
+                        }
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

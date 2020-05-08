@@ -1,0 +1,87 @@
+﻿@model MVCEdu.ViewModels.StudentCourseViewModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Students</h1>
+
+<p>
+    <a asp-action="New">Креирај нов</a>
+</p>
+<form asp-controller="Students" asp-action="Index" method="get">
+    <p>
+        Student ID: <input type="text" asp-for="SearchStudentId" /> <input type="submit" value="Filter" />
+        First Name: <input type="text" asp-for="SearchFirstName" /> <input type="submit" value="Filter" />
+        Last Name: <input type="text" asp-for="SearchLastName" /> <input type="submit" value="Filter" />
+    </p>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].StudentId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].FirstName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].LastName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].EnrollmentDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].AcquiredCredits)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].CurrentSemester)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].EducationLevel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Students[0].ProfilePicture)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Students) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.StudentId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EnrollmentDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AcquiredCredits)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CurrentSemester)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EducationLevel)
+            </td>
+            <td>
+                <img src="~/images/@item.ProfilePicture" class="rounded-circle" height="40" width="40" asp-append-version="true" />
+                @{
+                       // Html.DisplayFor(modelItem => item.ProfilePicture)
+                 }
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

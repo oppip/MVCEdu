@@ -12,15 +12,17 @@ using MVCEdu.ViewModels;
 
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using NuGet.Frameworks;
+using Microsoft.CodeAnalysis;
 
 namespace MVCEdu.Controllers
 {
     public class StudentsController : Controller
     {
         private readonly MVCEduContext _context;
-        private readonly IHostingEnvironment webHostEnvironment;
+        private readonly IWebHostEnvironment webHostEnvironment;
 
-        public StudentsController(MVCEduContext context, IHostingEnvironment hostEnvironment)
+        public StudentsController(MVCEduContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
             webHostEnvironment = hostEnvironment;
@@ -205,6 +207,96 @@ namespace MVCEdu.Controllers
             return View();
         }
 
+        public async Task<IActionResult> EditStudent(int? courseId, int? studentId)
+        {
+            IQueryable<Enrollment> enrollments = _context.Enrollment.AsQueryable();
+            if (courseId == null || studentId == null)
+            {
+                return NotFound();
+            }
+
+            //var course = await _context.Course.FindAsync(id);
+
+            var enrollmentId = enrollments.Where(s => s.CourseId == courseId).Where(s => s.StudentId == studentId);
+            var projecturl = await enrollmentId.ToListAsync();
+            var pr = "";
+            var projj = -1;
+            if (projecturl.Count == 0)
+            {
+                pr = "";
+                projj = -1;
+            }
+            else
+            {
+                pr = projecturl[0].ProjectUrl;
+                projj = projecturl[0].Id;
+            }
+
+            //enrollmentId = enrollments.Where(s => s.Id == enrollmentId)
+            var authStudentVM = new AuthStudentEditViewModel
+            {
+                //ProjectUrl = enrollmentId.ToString(),
+                enrollId = projj,
+                PURL = pr
+            };
+            return View(authStudentVM);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditStudent(int? id, [FromRoute] int enrollId, AuthStudentEditViewModel model)
+        {
+            IQueryable<Enrollment> enrollments = _context.Enrollment.AsQueryable();
+            var neededenroll = enrollments.Where(s => s.Id == enrollId);
+            var enroll = await neededenroll.ToListAsync();
+            var enrollment = enroll[enroll.Count];
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    string uniqueFileName = UploadedProject(model);
+                    enrollment.SeminalUrl = uniqueFileName;
+                    _context.Update(enrollment);
+                    await _context.SaveChangesAsync();
+                    await TryUpdateModelAsync<Enrollment>(
+                        enrollment,
+                        "",
+                        s => s.ProjectUrl, s => s.SeminalUrl);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!EnrollmentExists(enrollment.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(enrollment);
+        }
+
+        private bool EnrollmentExists(int id)
+        {
+            return _context.Enrollment.Any(e => e.Id == id);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AuthStudent(int? id)
+        {
+            IQueryable<Student> student = _context.Student.Include(s => s.Courses).ThenInclude(s => s.Course);
+            student = student.Where(s => s.Id == id);
+            // Student - lista kursev - 1 kurs
+            var authStudentVM = new AuthStudentViewModel
+            {
+                StudentList = await student.ToListAsync()
+            };
+            return View(authStudentVM);
+        }
+
 
         private string UploadedFile(StudentViewModel model)
         {
@@ -218,6 +310,23 @@ namespace MVCEdu.Controllers
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     model.ProfileImage.CopyTo(fileStream);
+                }
+            }
+            return uniqueFileName;
+        }
+
+        private string UploadedProject(AuthStudentEditViewModel model)
+        {
+            string uniqueFileName = null;
+
+            if (model.project != null)
+            {
+                string uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "projects");
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.project.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    model.project.CopyTo(fileStream);
                 }
             }
             return uniqueFileName;

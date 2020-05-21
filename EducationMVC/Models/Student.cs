@@ -9,6 +9,7 @@ namespace MVCEdu.Models
 {
     public class Student
     {
+        [Key]
         public int Id { get; set; }
 
         [Required]
@@ -38,5 +39,7 @@ namespace MVCEdu.Models
         public ICollection<Enrollment> Courses { get; set; }
 
         public string ProfilePicture { get; set; }
+
+/*        public string ProjectName { get; set; }*/
     }
 }

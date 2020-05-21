@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MVCEdu.Data;
 using MVCEdu.Models;
+using MVCEdu.ViewModels;
 
 namespace MVCEdu.Controllers
 {
@@ -183,5 +184,108 @@ namespace MVCEdu.Controllers
         {
             return _context.Enrollment.Any(e => e.Id == id);
         }
+
+        /////////////////////////////////////////
+        ////////////////////////////////////////
+        
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EnrollStudents(int id, EnrollStudentsViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    IEnumerable<int?> listStudents = model.SelectedStudents;
+                    IQueryable<Enrollment> toBeRemoved = _context.Enrollment.Where(s => !listStudents.Contains(s.StudentId) && s.CourseId == id);
+                    _context.Enrollment.RemoveRange(toBeRemoved);
+                    IEnumerable<int?> existStudents = _context.Enrollment.Where(s => listStudents.Contains(s.StudentId) && s.CourseId == id).Select(s => s.StudentId);
+                    IEnumerable<int?> newStudents = listStudents.Where(s => !existStudents.Contains(s));
+
+                    foreach (int studentId in newStudents)
+                        _context.Enrollment.Add(new Enrollment { StudentId = studentId, CourseId = id, Year = model.Year, Semester = model.Semester, });
+
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw;
+                }
+                return RedirectToAction(nameof(CoursesController.Index));
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EnrollStudents(int? id)
+        {
+            var course = _context.Course.Where(s => s.Id == id).Include(s => s.Students).First();
+
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            var enrollStudentsVM = new EnrollStudentsViewModel
+            {
+
+                Course = course,
+                /*CoursesList = new SelectList(_context.Course.OrderBy(s => s.Id), "Id", "Title"),*/
+                StudentList = new MultiSelectList(_context.Student.OrderBy(s => s.Id), "Id", "FirstName"),
+                SelectedStudents = course.Students.Select(s => s.StudentId),
+            };
+
+
+            return View(enrollStudentsVM);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UnEnrollStudents(int? id)
+        {
+            var course = _context.Course.Where(s => s.Id == id).Include(s => s.Students).First();
+
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            var unEnrollStudentVM = new UnEnrollStudentViewModel
+            {
+                Course = course,
+                StudentList = new MultiSelectList(_context.Student.OrderBy(s => s.Id), "Id", "FirstName"),
+                SelectedStudents = course.Students.Select(s => s.StudentId),
+            };
+
+            return View(unEnrollStudentVM);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnEnrollStudents(int id)
+        {
+
+            var enrollments = await _context.Enrollment.FirstOrDefaultAsync(s => s.Id == id);
+            await TryUpdateModelAsync<Enrollment>(
+               enrollments,
+               "",
+               s => s.FinishDate);
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(enrollments);
+        }
     }
 }
+

@@ -22,6 +22,8 @@ namespace MVCEdu.Data
 
         public DbSet<MVCEdu.Models.Teacher> Teacher { get; set; }
 
+        public DbSet<User> User { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<Course>()
@@ -40,6 +42,7 @@ namespace MVCEdu.Data
                 .HasOne<Student>(p => p.Student)
                 .WithMany(p => p.Courses)
                 .HasForeignKey(p => p.StudentId);
+       
         }
     }
 }

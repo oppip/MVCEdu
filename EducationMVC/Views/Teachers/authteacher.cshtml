@@ -1,0 +1,42 @@
+﻿@model MVCEdu.ViewModels.AuthTeacherViewModel
+@{
+    ViewData["Title"] = "Мои курсеви";
+}
+
+    <h1>Професорот  @Html.DisplayFor(model => model.nameTeacher) ги има предметите </h1>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Course)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Student)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.CourseList)
+        {
+            <tr>
+                <td>
+
+                    @Html.DisplayFor(modelItem => item.Title)
+
+                </td>
+                <td>
+                    @foreach (var student in item.Students)
+                    {
+                        <a asp-controller="Students" asp-action="Details" asp-route-id="@student.StudentId"> @student.Student.FirstName @student.Student.LastName</a> <br />
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Промени</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

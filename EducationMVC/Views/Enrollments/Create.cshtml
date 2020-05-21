@@ -1,4 +1,4 @@
-﻿@model MVCEdu.Models.Enrollment
+﻿@model MVCEdu.ViewModels.EnrollStudentsViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -14,12 +14,14 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="CourseId" class="control-label"></label>
-                <select asp-for="CourseId" class ="form-control" asp-items="ViewBag.CourseId"></select>
+                <select asp-for="CourseId" class="form-control" asp-items="ViewBag.CourseId"></select>
             </div>
-            <div class="form-group">
-                <label asp-for="StudentId" class="control-label"></label>
-                <select asp-for="StudentId" class ="form-control" asp-items="ViewBag.StudentId"></select>
-            </div>
+            <!-- <div class="form-group">
+         <label class="control-label">Students</label>
+         <select asp-for="SelectedStudents" class="form-control js-example-basic-multiple" asp-items="Model.StudentList"> </select>
+         <span asp-validation-for="SelectedStudents" class="text-danger"></span>
+     </div>
+        -->
             <div class="form-group">
                 <label asp-for="Semester" class="control-label"></label>
                 <input asp-for="Semester" class="form-control" />
@@ -31,44 +33,10 @@
                 <span asp-validation-for="Year" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Grade" class="control-label"></label>
-                <input asp-for="Grade" class="form-control" />
-                <span asp-validation-for="Grade" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SeminalUrl" class="control-label"></label>
-                <input asp-for="SeminalUrl" class="form-control" />
-                <span asp-validation-for="SeminalUrl" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectUrl" class="control-label"></label>
-                <input asp-for="ProjectUrl" class="form-control" />
-                <span asp-validation-for="ProjectUrl" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ExamPoints" class="control-label"></label>
-                <input asp-for="ExamPoints" class="form-control" />
-                <span asp-validation-for="ExamPoints" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SeminalPoints" class="control-label"></label>
-                <input asp-for="SeminalPoints" class="form-control" />
-                <span asp-validation-for="SeminalPoints" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectPoints" class="control-label"></label>
-                <input asp-for="ProjectPoints" class="form-control" />
-                <span asp-validation-for="ProjectPoints" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="AdditionalPoints" class="control-label"></label>
-                <input asp-for="AdditionalPoints" class="form-control" />
-                <span asp-validation-for="AdditionalPoints" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FinishDate" class="control-label"></label>
-                <input asp-for="FinishDate" class="form-control" />
-                <span asp-validation-for="FinishDate" class="text-danger"></span>
+                <label class="control-label" for="DirectorId">Director</label>
+                <select class="form-control" id="DirectorId" name="DirectorId">
+                    <option value=''>Select</option>
+                </select>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -83,4 +51,53 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            fillDirectors();
+        });
+        function getQueryVariable(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split('&');
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split('=');
+                if (decodeURIComponent(pair[0]) == variable) { return decodeURIComponent(pair[1]); }
+            }
+        }
+        var fillDirectors = function () {
+            $.ajax({
+                type: "GET",
+                url: "/api/StudentsApi",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(data).each(function () {
+                        $("#DirectorId").append('<option value="' + this.id + '">' + this.firstName + ' ' + this.lastName + '</option>');
+                    });
+                }
+            });
+        }
+        $("#button").click(function () {
+            var formData = {
+                CourseId: $("#CourseId").val(),
+                Semester: $("#Semester").val(),
+                Year: $("#Year").val(),
+                DirectorId: $("#DirectorId").val()
+            }
+            formData = JSON.stringify(formData);
+            $.ajax({
+                type: "POST",
+                url: "/api/EnrollmentsAPI",
+                data: formData,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (result) {
+                    window.location.href = "/Enrollments";
+                },
+                error: function (result) {
+                    alert(result.responseText);
+                }
+            });
+        });
+    </script>
 }

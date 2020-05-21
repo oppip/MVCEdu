@@ -18,9 +18,9 @@ namespace MVCEdu.Controllers
     public class TeachersController : Controller
     {
         private readonly MVCEduContext _context;
-        private readonly IHostingEnvironment webHostEnvironment;
+        private readonly IWebHostEnvironment webHostEnvironment;
 
-        public TeachersController(MVCEduContext context, IHostingEnvironment hostEnvironment)
+        public TeachersController(MVCEduContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
             webHostEnvironment = hostEnvironment;
@@ -207,6 +207,23 @@ namespace MVCEdu.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AuthTeacher(int? id)
+        {
+            IQueryable<Course> course = _context.Course.Include(s => s.Students).ThenInclude(s => s.Student);
+            course = course.Where(s => s.FirstTeacherId == id);
+            var nameTeacher = course.Where(s => s.FirstTeacherId == id);
+            var list = await nameTeacher.ToListAsync();
+            IQueryable<Teacher> teacher = _context.Teacher.Where(s => s.Id == list[0].FirstTeacherId);
+            var teachername = await teacher.ToListAsync();
+            var authTeacherVM = new AuthTeacherViewModel
+            {
+                nameTeacher = teachername[0].FirstName + " " + teachername[0].LastName,
+                CourseList = await course.ToListAsync()
+            };
+            return View(authTeacherVM);
         }
 
 
